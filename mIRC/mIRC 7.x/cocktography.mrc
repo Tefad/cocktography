@@ -32,11 +32,12 @@ on 1:start: {
 ; The next variable dictatates the final entry which follows. Use an integer.
   set -ign %cocktography.stroke_max_format 3
   set -ign %cocktography.stroke_0_format 030🐓
-  set -ign %cocktography.stroke_1_format 04{{count}}🍆
+  set -ign %cocktography.stroke_1_format 041🍆
   set -ign %cocktography.stroke_2_format 04🍆
   set -ign %cocktography.stroke_3_format 04{{count}}🍆
   set -ign %cocktography.text_format   {{stroke}}<{{nick}}> {{dechoded}}
   set -ign %cocktography.action_format * {{stroke}}{{nick}} {{dechoded}}
+  set -ign %cocktography.strokes_default 2
   set -ign %cocktography.payload_max 150
   set -ign %cocktography.cockblock_max 340
   set -ign %cocktography.stroketext_max 280  
@@ -129,11 +130,10 @@ alias decyphallus {
   tokenize 32 $$1
   var %i 1, %out, %char
   while (%i <= $0) {
-    %char = $hget(cocktography.dec, $evalnext($ $+ %i))
-    %out = %out $+ %char
+    %out = $+($left(%out, -1), $hget(cocktography.dec, $evalnext($ $+ %i)), .)
     inc %i
   }
-  returnex %out
+  returnex $left(%out, -1)
  }
  
 ; Intercept singleton cockblock/cockchain
@@ -160,7 +160,7 @@ on ^1:action:%cocktography.final_mask:#: dechodeecho $event $strokebuffer $+ $de
 ; payload is restricted to 150 characters
 ; strokes are limited to producing roughly 370 characters of stroketext
 alias enchode {
-  var %strokes 2, %input $parms
+  var %strokes %cocktography.strokes_default, %input $parms
   if ($regex(%input, /^(-s ?|--strokes?[ =])([0-9]+)( +)/) && $regml(0) == 3) {
     %strokes = $regml(2)
     var -n %len $calc($len($regml(1)) + $len(%strokes) + $len($regml(3)) + 1)
